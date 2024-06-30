@@ -13,6 +13,7 @@ This is a full-stack task app built with Nest.js, Next.js, TypeScript, Prisma, a
 - **Toggle Dark Mode:** Incorporates a dark mode feature for user customization.
 - **CRUD Operations:** Provides basic CRUD (Create, Read, Update, Delete) operations for managing tasks.
 - **BackEnd Nest.js:** Created RESTful APIs with nest js.
+- **Web Scraping:** Implements scraping of LinkedIn profiles using Selenium WebDriver to extract name and image from profile links.
 
 ## Getting Started
 
@@ -37,8 +38,8 @@ Windows:
    `cd client npm i`
 
 3. Run the server side:
-   `npm run start:dev`
+   `cd servern pm run start:dev`
 
 4. Run the client side:
-   `npm run dev`
+   `cd client npm run dev`
    Open http://localhost:3000 in your browser to view the app.
