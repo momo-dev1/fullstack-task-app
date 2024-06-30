@@ -4,7 +4,11 @@
 The Video does not show all the features of the project.
 <br /> 
 
-https://github.com/momo-dev1/fullstack-task-app/assets/57541594/25876138-6484-417b-807d-cee2bc8a1009
+
+
+https://github.com/momo-dev1/fullstack-task-app/assets/57541594/db5578a4-e67f-4015-adae-28750b1adae5
+
+
 
 This is a full-stack task app built with Nest.js, Next.js, TypeScript, Prisma, and MongoDB.
 ## Features
