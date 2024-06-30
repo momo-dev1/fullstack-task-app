@@ -15,10 +15,12 @@ import { useRouter } from "next/navigation";
 import { customFetch } from "@/lib/axiosInstance";
 import Wrapper from "@/components/Wrapper";
 import toast from "react-hot-toast";
+import Spinner from "@/components/Spinner";
 
 type IProps = {
   email: string;
   password: string;
+  linkedinUrl?: string;
 };
 
 const Auth = () => {
@@ -26,6 +28,8 @@ const Auth = () => {
     email: "",
     password: "",
   });
+  const [loading, setLoading] = useState(false);
+
   const [variant, setVariant] = useState("login");
   const router = useRouter();
 
@@ -48,24 +52,31 @@ const Auth = () => {
 
     if (variant === "login") {
       try {
+        setLoading(true);
         const { data } = await customFetch.post("/auth/signin", {
           email: inputs.email,
           password: inputs.password,
         });
         setCookie("token", data.access_token);
         toast.success("Welcome back!");
+        setLoading(false);
       } catch (error: any) {
         toast.error(error?.response?.data?.message);
+        setLoading(false);
       }
     } else {
       try {
+        setLoading(true);
         const { data } = await customFetch.post("/auth/signup", {
           email: inputs.email,
           password: inputs.password,
+          linkedInUrl: inputs.linkedinUrl,
         });
         setCookie("token", data.access_token);
+        setLoading(false);
       } catch (error: any) {
         toast.error(error?.response?.data?.message);
+        setLoading(false);
       }
     }
 
@@ -102,15 +113,39 @@ const Auth = () => {
               <Input
                 id="password"
                 name="password"
-                placeholder="Enter your password"
+                placeholder="Enter your email"
                 required
                 type="password"
                 value={inputs.password}
                 onChange={handleChange}
               />
             </div>
+            {variant === "register" && (
+              <div className="space-y-2">
+                <Label htmlFor="password">Linkedin URL</Label>
+                <Input
+                  id="llinkedinUrl"
+                  name="linkedinUrl"
+                  placeholder="Enter your linkedin profile url"
+                  required
+                  type="text"
+                  value={inputs.linkedinUrl}
+                  onChange={handleChange}
+                />
+              </div>
+            )}
             <Button className="w-full" type="submit">
-              {variant === "login" ? "Login" : "Register"}
+              {variant === "login" ? (
+                loading ? (
+                  <Spinner />
+                ) : (
+                  "Login"
+                )
+              ) : loading ? (
+                <Spinner />
+              ) : (
+                "Register"
+              )}
             </Button>
             <button
               onClick={toggleVariant}

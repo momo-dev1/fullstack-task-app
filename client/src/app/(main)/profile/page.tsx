@@ -12,12 +12,12 @@ const page = async () => {
           <div className="space-y-4 xl:space-y-6">
             <img
               className="mx-auto rounded-full h-36 w-36"
-              src="https://thispersondoesnotexist.com/image"
+              src={user.imageUrl}
               alt="author avatar"
             />
             <div className="space-y-2">
               <div className="flex justify-center items-center flex-col space-y-3 text-lg font-medium leading-6">
-                <h3 className="text-white">John Doe</h3>
+                <h3 className="text-white">{user.name}</h3>
                 <p className="text-indigo-300">{user.email}</p>
               </div>
             </div>
