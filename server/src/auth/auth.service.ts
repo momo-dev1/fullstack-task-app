@@ -1,12 +1,12 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { AuthDto } from './dto';
+import { AuthRegisterDto, AuthLoginDto } from './dto';
 import * as argon from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-// import { Builder, By, until, WebDriver } from 'selenium-webdriver';
-// import * as chrome from 'selenium-webdriver/chrome';
+import { WebDriver, Builder, By, until } from 'selenium-webdriver';
+import * as edge from 'selenium-webdriver/edge';
 
 @Injectable()
 export class AuthService {
@@ -16,14 +16,27 @@ export class AuthService {
     private config: ConfigService,
   ) {}
 
-  async signup(authDto: AuthDto) {
-    const { email, password } = authDto;
+  async signup(authRegisterDto: AuthRegisterDto) {
+    const { email, password, linkedInUrl } = authRegisterDto;
     const hashedPassword = await argon.hash(password);
     try {
       const user = await this.prisma.user.create({
         data: {
           email,
           password: hashedPassword,
+          linkedInUrl,
+        },
+      });
+
+      // Scrape profile data
+      const profileData = await this.scrapeProfile(linkedInUrl);
+
+      // Update user with scraped profile data
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          name: profileData.name,
+          imageUrl: profileData.imageURL,
         },
       });
 
@@ -39,37 +52,52 @@ export class AuthService {
     }
   }
 
-  // async scrapeLinkedinName(linkedinUrl: string): Promise<string | null> {
-  //   console.log(linkedinUrl);
-  //   try {
-  //     const options: chrome.Options = new chrome.Options();
-  //     options.addArguments('--headless'); // Run Chrome in headless mode
-  //     options.addArguments('--disable-gpu'); // Disable GPU for improved performance (optional)
+  async scrapeProfile(profileURL: string): Promise<any> {
+    const driver: WebDriver = await new Builder()
+      .forBrowser('MicrosoftEdge')
+      .setEdgeOptions(
+        new edge.Options().addArguments(
+          '--headless',
+          '--disable-extensions',
+          '--enable-chrome-browser-cloud-management',
+          '--remote-debugging-port=0',
+        ),
+      )
+      .build();
 
-  //     const driver: WebDriver = await new Builder()
-  //       .forBrowser('chrome')
-  //       .setChromeOptions(options)
-  //       .build();
+    try {
+      await driver.get('https://www.linkedin.com/login');
+      const emailInput = await driver.findElement(By.id('username'));
+      const passwordInput = await driver.findElement(By.id('password'));
+      const loginButton = await driver.findElement(
+        By.css('button[type="submit"]'),
+      );
+      await emailInput.sendKeys('m65858752@gmail.com');
+      await passwordInput.sendKeys('123456mM');
+      await driver.sleep(3000);
+      await loginButton.click();
+      await driver.sleep(1500);
+      await driver.get(profileURL);
+      await driver.sleep(5000);
+      const nameElement = await driver.wait(
+        until.elementLocated(By.css('h1.text-heading-xlarge')),
+        20000,
+      );
+      const name = await nameElement.getText();
+      const photoElement = await driver.findElement(
+        By.css(
+          'img.pv-top-card-profile-picture__image--show.evi-image.ember-view',
+        ),
+      );
+      const imageURL = await photoElement.getAttribute('src');
+      return { name, imageURL };
+    } finally {
+      await driver.quit();
+    }
+  }
 
-  //     await driver.get(linkedinUrl);
-
-  //     // Wait for the profile name element to be visible
-  //     const nameElement = await driver.wait(
-  //       until.elementLocated(By.cssSelector('.h1.text-heading-xlarge')),
-  //       20000,
-  //     );
-
-  //     const name = await nameElement.getText();
-  //     await driver.quit();
-  //     return name.trim() || null; // Return trimmed name or null if not found
-  //   } catch (error) {
-  //     console.error('Error scraping LinkedIn name:', error);
-  //     return null;
-  //   }
-  // }
-
-  async signin(authDto: AuthDto) {
-    const { email, password } = authDto;
+  async signin(authLoginDto: AuthLoginDto) {
+    const { email, password } = authLoginDto;
     const user = await this.prisma.user.findUnique({
       where: {
         email,

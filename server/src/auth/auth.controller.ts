@@ -1,23 +1,25 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthDto } from './dto';
+import { AuthRegisterDto, AuthLoginDto } from './dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('signup')
-  signup(@Body() authDto: AuthDto) {
-    return this.authService.signup(authDto);
+  signup(@Body() authRegisterDto: AuthRegisterDto) {
+    return this.authService.signup(authRegisterDto);
   }
 
-  // @Post('scrape-example')
-  // linked(@Body() profileUrl: string) {
-  //   return this.authService.scrapeLinkedinName(profileUrl);
-  // }
+  @Post('scrape')
+  async linked(@Body() body: { profileURL: string }) {
+    const { profileURL } = body;
+    const result = await this.authService.scrapeProfile(profileURL);
+    return result;
+  }
 
   @Post('signin')
-  signin(@Body() authDto: AuthDto) {
-    return this.authService.signin(authDto);
+  signin(@Body() authLoginDto: AuthLoginDto) {
+    return this.authService.signin(authLoginDto);
   }
 }
