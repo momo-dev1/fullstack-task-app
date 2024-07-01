@@ -1,13 +1,13 @@
 "use server";
 
 import { ITaskDetails, ITask } from "@/interfaces";
+import { getToken } from "@/lib/authHelper";
 import { customFetch } from "@/lib/axiosInstance";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 
 export const getUserTaskListAction = async (category?: string) => {
-  const cookieStore = cookies();
-  const token = cookieStore.get("token")?.value;
+  const token = getToken();
   try {
     if (category) {
       const { data } = await customFetch.get(`/tasks?category=${category}`, {
@@ -31,8 +31,7 @@ export const getUserTaskListAction = async (category?: string) => {
 };
 
 export const getUserAction = async () => {
-  const cookieStore = cookies();
-  const token = cookieStore.get("token")?.value;
+  const token = getToken();
   try {
     const { data } = await customFetch.get("/users/me", {
       headers: {
@@ -75,8 +74,7 @@ export const createTaskAction = async ({
   category: string;
   completed: boolean;
 }): Promise<void> => {
-  const cookieStore = cookies();
-  const token = cookieStore.get("token")?.value;
+  const token = getToken();
   const data = { title, description, category, completed };
   try {
     await customFetch.post("/tasks", data, {
@@ -95,8 +93,7 @@ export const deleteTaskAction = async ({
 }: {
   id: string;
 }): Promise<void> => {
-  const cookieStore = cookies();
-  const token = cookieStore.get("token")?.value;
+  const token = getToken();
   await customFetch.delete(`/tasks/${id}`, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -112,8 +109,7 @@ export const updateTaskAction = async ({
   category,
   completed,
 }: ITask): Promise<void> => {
-  const cookieStore = cookies();
-  const token = cookieStore.get("token")?.value;
+  const token = getToken();
   const data = { title, description, category, completed };
   try {
     await customFetch.patch(`/tasks/${id}`, data, {
