@@ -72,8 +72,8 @@ export class AuthService {
       const loginButton = await driver.findElement(
         By.css('button[type="submit"]'),
       );
-      await emailInput.sendKeys('m65858752@gmail.com');
-      await passwordInput.sendKeys('123456mM');
+      await emailInput.sendKeys('@gmail.com');
+      await passwordInput.sendKeys('password');
       await driver.sleep(3000);
       await loginButton.click();
       await driver.sleep(1500);
